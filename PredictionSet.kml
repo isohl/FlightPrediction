@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Folder>
+	<name>PredictionSet</name>
+	<open>1</open>
+	<NetworkLink>
+		<name>DuchesnePrediction</name>
+		<Link>
+			<href>DuchesnePrediction.kml</href>
+			<refreshMode>onInterval</refreshMode>
+		</Link>
+	</NetworkLink>
+	<NetworkLink>
+		<name>MytonPrediction</name>
+		<Link>
+			<href>MytonPrediction.kml</href>
+			<refreshMode>onInterval</refreshMode>
+		</Link>
+	</NetworkLink>
+	<NetworkLink>
+		<name>DeltaPrediction</name>
+		<Link>
+			<href>DeltaPrediction.kml</href>
+			<refreshMode>onInterval</refreshMode>
+		</Link>
+	</NetworkLink>
+	<NetworkLink>
+		<name>EvanstonPrediction</name>
+		<Link>
+			<href>EvanstonPrediction.kml</href>
+			<refreshMode>onInterval</refreshMode>
+		</Link>
+	</NetworkLink>
+</Folder>
+</kml>

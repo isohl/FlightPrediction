@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Prediction Track.kml</name>
+	<StyleMap id="msn_ylw-pushpin">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ylw-pushpin</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ylw-pushpin</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sn_ylw-pushpin">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<LineStyle>
+			<color>ff00ffff</color>
+			<width>3</width>
+		</LineStyle>
+	</Style>
+	<Style id="sh_ylw-pushpin">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<LineStyle>
+			<color>ff00ffff</color>
+			<width>3</width>
+		</LineStyle>
+	</Style>
+	<Placemark>
+		<name>Prediction Track</name>
+		<styleUrl>#msn_ylw-pushpin</styleUrl>
+		<LineString>
+			<tessellate>1</tessellate>
+			<coordinates>
+-110.127036,40.149089,5826
+-110.12796953,40.1498542013,1886
+-110.128545857,40.1507187738,8585
+-110.1303031,40.1534726393,10508
+-110.130919019,40.1588534433,12542
+-110.127813056,40.1671317324,14704
+-110.11995359,40.1763800663,17011
+-110.107280487,40.1871341682,19488
+-110.093279985,40.2013276517,22165
+-110.077525199,40.2185128523,25091
+-110.061990227,40.2354539857,28336
+-110.047635207,40.253692112,31978
+-110.039265602,40.2712419156,36115
+-110.046301824,40.298860902,40931
+-110.036023382,40.3357413172,46847
+-110.027609096,40.3246320936,54898
+-110.028386657,40.3133206985,62007
+-110.056921239,40.3152242882,68861
+-110.101177004,40.3193676365,79530
+-110.104942017,40.3193676365,80000
+-110.121795158,40.3209453778,62007
+-110.139339979,40.32211569,54898
+-110.139861923,40.314522549,46847
+-110.136198197,40.3096838788,40931
+-110.131237768,40.3274797024,36115
+-110.134823387,40.3415424687,31978
+-110.1304503,40.3507002582,28336
+-110.12285608,40.3603323132,25091
+-110.114535658,40.3693868464,22165
+-110.1059706,40.3787063468,19488
+-110.098270153,40.3864908448,17011
+-110.091252074,40.3924277445,14704
+-110.086871688,40.3975650522,12542
+-110.085133532,40.4021814138,10508
+-110.08547996,40.4051967761,8585
+-110.086473281,40.4067476124,6758
+-110.086797237,40.4072317487,5032
+-110.087025622,40.4074182399,3412
+-110.08713282,40.4075088948,2637
+-110.087238696,40.4075953485,1886
+-110.087783675,40.4080562261,5826
+-110.087783675,40.4080562261,5826
+			</coordinates>
+		</LineString>
+	</Placemark>
+</Document>
+</kml>
