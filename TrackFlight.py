@@ -34,14 +34,38 @@ class Application(Frame):
         else:
             return False        
     
-    def writetrack(self,track,latitude=0,longitude=0,altitude=0,append=True,coordlist=[]):
+    def renamelog(logfile,savetime):
+        oldfile = logfile+".sohl"
+        newfile = logfile+str(savetime)+".sohl"
+        count = 0
+        try:
+            os.rename(oldfile,newfile)
+        except OSError:
+            count+=1
+            newfile = logfile+str(savetime)+"--"+str(count)+".sohl"
+            if count>50:
+                return False
+        return True
+    
+    def writelog(coords,filepath):
+        pass
+    
+    def writetrack(self,track,latitude=0,longitude=0,altitude=0,append=True,coordlist=[],log=True):
         track = track.lower()
         if self.tracks[track]["active"]==True:
             filepath = self.tracks[track]["file"]
-            if append:                
+            if append:
                 position = (longitude, latitude, altitude)                
+                if log==True:
+                    logfile = self.tracks[track]["log"]
+                    self.writelog([position],logfile)
                 writetoKML.writeonce(position,filepath)
             else:
+                if log==True:
+                    logfile = self.tracks[track]["log"]
+                    savetime = datetime.datetime.now().date()
+                    if self.renamelog(logfile,savetime):
+                        self.writelog(coordlist,filepath)
                 writetoKML.rewrite(coordlist,filepath)
                 
     def wipeballoon(self):
@@ -92,7 +116,7 @@ class Application(Frame):
                 gpscompatible = decodeTNC.determineCompatability(packet,self.d710Signs)
                 if gpscompatible:
                     latlong = decodeTNC.latlong(packet)
-                    self.writetrack("d710",latitude=latlong[1],longitude=latlong[0])
+                    self.writetrack("d710",latitude=latlong[1],longitude=latlong[0],log=True)
                     print "Added D710 Track"
                 else:
                     print "No D-Track Added"
@@ -102,12 +126,17 @@ class Application(Frame):
                 continue
             compatible = self.checkCompatibility(p)
             if compatible:
-                self.writetrack("balloon",latitude=p.latitude,longitude=p.longitude,altitude=p.altitude)
+                self.writetrack("balloon",latitude=p.latitude,longitude=p.longitude,altitude=p.altitude,log=True)
                 print "Added Balloon Track: "+str(p.src_callsign)
             else:
                 print "No B-Track Added: "+str(p.src_callsign)
             #sys.stdout.flush()
-                  
+    
+    def addchasecallsign(self):
+        newcallsign = self.callsigntoadd.get()
+        if newcallsign in self.tracks:
+            print "Already Used"
+    
     
     def submit(self):
         fileget=self.fileaddress.get()
@@ -148,51 +177,52 @@ class Application(Frame):
         self.listeners = Entry(self, justify=LEFT)
         #self.listeners.pack()
         self.listeners.grid(row=1, column=1, columnspan=2, sticky=E+W)
-        self.listeners.insert(0,"KE7ROS, WB1SAR, KF7WII")
+        self.listeners.insert(0,"WB1SAR, KF7WII")
         self.listeners.bind('<Return>',self.submit)
         self.instructions4 = Label(self,text="Add another chase-team")
         self.instructions4.grid(row=3, columnspan = 3)
         self.instructions3 = Label(self)
         self.callsigntoadd = Entry(self, justify=LEFT)
-        self.callsigntoadd.grid(row=4,column=1, columnspan=2)
-        self.addcallsign 
+        self.callsigntoadd.grid(row=4,column=0, columnspan=2)
+        self.addcallsign = Button(self, text="Add Callsign", command=self.addchasecallsign)
+        self.addcallsign.grid(row=4,column=2)
         self.instructions3["text"] = "\nFiles to be tracked:"
         #self.instructions3.pack()
-        self.instructions3.grid(row=3, columnspan=3)
+        self.instructions3.grid(row=5, columnspan=3)
         self.ballooncheckvar = IntVar()
         self.ballooncheckvar.set(1)
         self.ballooncheck = Checkbutton(self, text="Balloon",variable=self.ballooncheckvar)
         #self.ballooncheck.pack()
-        self.ballooncheck.grid(row=4, column=0, sticky=W+E)
+        self.ballooncheck.grid(row=6, column=0, sticky=W+E)
         self.d710checkvar = IntVar()
         self.d710checkvar.set(1)
         self.d710check = Checkbutton(self, text="D710",variable=self.d710checkvar)
         #self.d710check.pack()
-        self.d710check.grid(row=4, column=1, sticky=W, padx=5)
+        self.d710check.grid(row=6, column=1, sticky=W, padx=5)
         self.predictioncheckvar = IntVar()
         self.predictioncheckvar.set(1)
         self.predictioncheck = Checkbutton(self, text="Prediction",variable=self.predictioncheckvar)
         #self.predictioncheck.pack()
-        self.predictioncheck.grid(row=4, column=2, sticky=W)
+        self.predictioncheck.grid(row=6, column=2, sticky=W)
         self.submiter = Button(self, bg="#0055EE", fg="white")
         self.submiter["text"] = "Submit"
         self.submiter["command"] = self.submit
         #self.submiter.pack()
-        self.submiter.grid(row=5,columnspan=3, pady=10)
+        self.submiter.grid(row=7,columnspan=3, pady=10)
         self.balloonwipe = Button(self, text="Wipe Balloon", command=self.wipeballoon)
-        self.balloonwipe.grid(row=6)
+        self.balloonwipe.grid(row=8)
         self.d710wipe = Button(self, text="Wipe D710", command=self.wipeD710)
-        self.d710wipe.grid(row=6,column=1)
+        self.d710wipe.grid(row=8,column=1)
         self.newprediction = Button(self, text="New Prediction", command=self.userprediction)
-        self.newprediction.grid(row=6, column=2)
+        self.newprediction.grid(row=8, column=2)
 
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.pack()
         fap.init()
-        self.tracks = {"balloon":{"active":True, "file":"./Balloon Track.kml"},
-                               "d710":{"active":True, "file":"./D710 Track.kml"},
-                               "prediction":{"active":True, "file":"./Prediction.kml"}}        
+        self.tracks = {"balloon":{"active":True, "file":"./Balloon Track.kml", "log":"./Balloon"},
+                               "d710":{"active":True, "file":"./D710 Track.kml", "log":"./D710"},
+                               "prediction":{"active":True, "file":"./Prediction.kml", "log":"./Prediction"}}        
         self.createWidgets()
 
 

@@ -25,19 +25,22 @@ def getNewPacket(savedtime):
 def checkCompatibility(packet):
     acceptedSigns = ["KE7ROS","WB1SAR","KF7WII","KF7WIG","KF7WIJ"]
     src = packet.src_callsign.strip("-11")
-    src = src.strip("-7")
+    #src = src.strip("-7")
     if src in acceptedSigns:
         return True
     else:
         return False
 
-def sayAltitude(packet):
+def sayAltitude(packet,ascentrate=0):
     alt = packet.altitude
     src = packet.src_callsign
     if alt is not None:
         alt = int(floor(alt/1000*3.28084)*1000)
         text = "Balloon currently at %d feet" % (int(alt))
+        if ascentrate is not 0:
+            text2 = "Ascent Rate is %d Feet per minute" % ascentrate
         engine.say(text)
+        #engine.say(text2)
         engine.runAndWait()
         print "Said"
 
@@ -57,8 +60,10 @@ if __name__=="__main__":
     else:
         print "UNKNOWN OPERATING SYSTEM. GET A LIFE."
     savedtime=os.stat(filepath).st_mtime
-    lasttime = 0
+    ascentrate = 0
+    lasttime = time.time()
     lastpacket = None
+    lastpackettime = None
     try:
         while 1:
             newpacket,savedtime = getNewPacket(savedtime)
@@ -66,20 +71,22 @@ if __name__=="__main__":
                 try:
                     p = fap.Packet(newpacket)
                 except fap.DecodeError:
-                    if "GPRMC" in newpacket:
-                        print "D710 Packet"
-                    else:
-                        print "Invalid Packet"
                     continue
                 compatible = checkCompatibility(p)
                 #compatible = True
                 if compatible:
+                    if lastpacket is not None:
+                        lastalt = lastpacket.altitude
+                        if not lastalt==p.altitude:
+                            currentpackettime = time.time()
+                            ascentrate = floor(((p.altitude-lastalt)*3.28084)/((currentpackettime-lastpackettime)/60)/100)*100
                     lastpacket = p
-                    print "Updated with: %s" % p.src_callsign
+                    lastpackettime = time.time()
+                    
             curtime = time.time()
-            if curtime-lasttime>300:
+            if curtime-lasttime>30:
                 if not lastpacket == None:
-                    sayAltitude(lastpacket)
+                    sayAltitude(lastpacket,ascentrate)
                 lasttime = curtime
     except KeyboardInterrupt:
         print "KeyBoardInterrupt"

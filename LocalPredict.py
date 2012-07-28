@@ -66,6 +66,8 @@ def getDataFromFile(filename="./WindData.sohl"):
     return data
 
 def saveDataToFile(filename="./WindData.sohl",data=None):
+    if data==None:
+        return False
     aFile = open(filename,"w")
     aFile.write(data)
     aFile.close()
@@ -194,7 +196,7 @@ def main(launchtime=None,launchsite=(40.149089,-110.127036,5826),ascentrate=1045
     data = getData(launchtime,wxstation,source)
     if messages: print "\t...Done"
     if messages: print "Parsing Data"
-    if data=="" or None:
+    if data=="" or data==None:
         print "No Data, Loading from File...\n*** Warning, this data may be out of date ***"
         data = getDataFromFile()
     else:
@@ -228,7 +230,7 @@ if __name__=="__main__":
     descentrate = 1763
     #Burst Altitude in feet above sea level
     burstaltitude = 98000
-    burstaltitude = 80000
+    #burstaltitude = 80000
     #The closest weather station (http://nearspaceventures.com/w3Baltrak/htdocs/stationlist.html)
     wxstation = "VEL"
     #The datasource you want to use, recommended: GFS
