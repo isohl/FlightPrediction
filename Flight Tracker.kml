@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Folder>
+	<name>Flight Tracker</name>
+	<open>1</open>
+	<NetworkLink>
+		<name>Balloon Tracker</name>
+		<Link>
+			<href>Tracks/Balloon Track.kml</href>
+			<refreshMode>onInterval</refreshMode>
+		</Link>
+	</NetworkLink>
+	<NetworkLink>
+		<name>D710 Tracker</name>
+		<Link>
+			<href>Tracks/D710 Track.kml</href>
+			<refreshMode>onInterval</refreshMode>
+		</Link>
+	</NetworkLink>
+	<NetworkLink>
+		<name>Prediction Tracker</name>
+		<Link>
+			<href>Tracks/Prediction Track.kml</href>
+			<refreshMode>onInterval</refreshMode>
+		</Link>
+	</NetworkLink>
+	<NetworkLink>
+		<name>Chase Tracker</name>
+		<Link>
+			<href>Tracks/ChaseTeams.kml</href>
+			<refreshMode>onInterval</refreshMode>
+		</Link>
+	</NetworkLink>
+</Folder>
+</kml>

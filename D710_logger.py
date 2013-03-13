@@ -29,7 +29,7 @@ elif os.name=="nt": #NT is the special name for Windows
         try:
                 ser=serial.Serial(comport)
         except IndexError:
-                print "Seial Device not connected" #Again, if this isn't working, make sure its plugged in
+                print "Serial Device not connected" #Again, if this isn't working, make sure its plugged in
         try:
                 filepath = os.path.expanduser(os.path.join('~','tnclogs','tnc.log'))
                 log=open(filepath,"a")
@@ -61,3 +61,5 @@ except:#In case off failure, or even a keyboard interrupt, this will shut down t
         log.close()
         ser.close()
         raise
+
+

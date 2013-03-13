@@ -107,6 +107,7 @@ def cleanup():
 
 if __name__ == "__main__":	
 	init()
-	p = Packet(r'KF7DEI-3>APT312,WIDE2-2:/132932h4012.17N/11019.28WO075/016/A=023420')
-	print p.src_callsign
+	#p = Packet(r'KF7DEI-3>APT312,WIDE2-2:/132932h4012.17N/11019.28WO075/016/A=023420')
+	#print p.src_callsign
+	p = Packet("TEST1>WIDE2-2:/PKWDPOS,142901,A,4011.4851,N,11023.1464,W,0.28,28,100812,1774.3*25")
 	cleanup()

@@ -1,24 +1,36 @@
+"""
+writetoKML.py is a module for a HAM Radio tracking program for the HARBOR High Altitude Balloon Project.
+    This module contains functions for writing data to Google Earth KML files
+    
+Ian Sohl
+"""
 import os
 
 def writeonce(position,aFile):
+    """Write a single coordinate to file (altitude optional)"""
     keepgoing=True
     while keepgoing==True:
+        #Keep trying while file processes are tied up.
         try:
             keepgoing=False
+            #Rename the file to a temporary one
             os.rename(aFile,aFile+"~" )
         except:
             print "Error"
             try:
+                #If the temporary file exists, remove it
                 os.remove(aFile+"~")
             except:
                 keepgoing=True
     try:
-    ##    aFile = 'Test File.kml'
+        #Create the output file
         destination= open( aFile, "w" )
         source= open( aFile+"~", "r" )
         for line in source:
+            #Write lines from the source into the output, appending the coordinate data when appropriate
             if line == '\t\t\t</coordinates>\n':
                 if len(position)==2:
+                    #If no altitude is specified, use an altitude of 0
                     destination.write(str(position)+",0\n" )
                 else:
                     destination.write("%s,%s,%s\n" % position)
@@ -30,14 +42,18 @@ def writeonce(position,aFile):
         destination.close()
         return False
     finally:
+        #Even if an error occured, make sure to close the files safely
         source.close()
         os.remove(aFile+"~")
         destination.close()
     return True
 
 def rewrite(coordlist,aFile):
+    """Completely erase all data in a file and add a list of coordinates"""
     while 1:
+        #More efficient rename loop
         try:
+            #Exit loop upon the successful rename
             os.rename(aFile,aFile+"~")
             break
         except:
@@ -51,6 +67,7 @@ def rewrite(coordlist,aFile):
     write = True
     try:
         for line in source:
+            #Keep writing until encountering coordinates tag, then append all coordinates in list
             if "</coordinates>" in line:
                 if coordlist == None:
                     pass
@@ -70,11 +87,17 @@ def rewrite(coordlist,aFile):
         destination.close()
     return True
 
-def writeFresh(filename,data):
-	kmlPrefix = ''''<?xml version="1.0" encoding="UTF-8"?>
+"""
+Everything below is part of Sheyne's rewrite into an object-oriented mode
+Really need to switch over to using this...
+"""
+
+
+class KML(object):
+    kmlbase = '''<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
 <Document>
-	<name>D710 Track.kml</name>
+	<name>%(name)s</name>
 	<StyleMap id="msn_ylw-pushpin">
 		<Pair>
 			<key>normal</key>
@@ -94,8 +117,8 @@ def writeFresh(filename,data):
 			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
 		</IconStyle>
 		<LineStyle>
-			<color>ff0000ff</color>
-			<width>3</width>
+			<color>%(color)s</color>
+			<width>%(width)s</width>
 		</LineStyle>
 	</Style>
 	<Style id="sh_ylw-pushpin">
@@ -107,41 +130,46 @@ def writeFresh(filename,data):
 			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
 		</IconStyle>
 		<LineStyle>
-			<color>ff0000ff</color>
-			<width>3</width>
+			<color>%(color)s</color>
+			<width>%(width)s</width>
 		</LineStyle>
 	</Style>
 	<Placemark>
-		<name>D710 Track</name>
+		<name>%(name)s</name>
 		<styleUrl>#msn_ylw-pushpin</styleUrl>
 		<LineString>
 			<tessellate>1</tessellate>
 			<coordinates>
-'''		
-	kmlSuffix = ''''
-</coordinates>
+			%(coordList)s
+			</coordinates>
 		</LineString>
 	</Placemark>
 </Document>
 </kml>
 '''
-	destination = open(filename,"w")
-    
-	write = True
-	destination.write(kmlPrefix)
-	try:     
-		for i in data:
-			destination.write("%s,%s,%s\n" % data[i])
-			print ('Wrote coordinate line ' + i+1)
-	except KeyboardInterrupt:
-		return False
-	finally:
-		destination.write(kmlSuffix)
-		destination.close()
-	return True
 
-"""
-while 1:
-    writeonce()
-    raw_input("Waiting...")
-"""
+    def __init__(self, name, data=[], color='ff00ff00', width=2):
+        self.name = name
+        self.color = color
+        self.width = width
+        self.data = list(data)
+
+    def __str__(self):
+        self.coordList = '\n'.join('%s,%s,%s' % i for i in self.data if len(i)==3)	
+
+        return KML.kmlbase % self.__dict__
+
+    def add_data_point(self, lat, lon, alt):
+        self.data.append((lat, lon, alt))
+
+    def write(self, filename):
+        with open(filename,'w') as destination:
+            destination.write(str(self))
+
+
+if __name__ == "__main__":
+    kml = KML('TestKML')
+    kml.data = [(45,144,4), (56,100,6)]
+    kml.add_data_point(20, 45, 10)
+    kml.write('testKML.kml')
+

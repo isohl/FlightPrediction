@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% if error.type == 'prediction error' %}
+		Error: {{error.message}}
+	{% else %}
+		Error: <pre style='color:red'>{{error.message}}</pre>
+	{% endif %}
+{% endblock %}

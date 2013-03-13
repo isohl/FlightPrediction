@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script>
+var ascentpath = {{uptrack}}
+var descentpath = {{downtrack}}
+
+function polylineforpath(path, bounds, color){
+	gpath = []
+	for(point in path){
+		p = path[point]
+		p=new google.maps.LatLng(p[0], p[1])
+		gpath.push(p)
+		bounds.extend(p)
+	}
+	
+	var polyline = new google.maps.Polyline({
+		editable: false,
+		path: gpath,
+		strokeColor: color,
+		strokeOpacity: 1.0,
+		strokeWeight: 2
+	});
+	return polyline
+}
+
+window.addEventListener("load",function() {
+	var bounds = new google.maps.LatLngBounds();
+	var mapOptions = {
+		zoom: 9,
+		mapTypeId: google.maps.MapTypeId.TERRAIN
+	};
+	var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+	
+	map.fitBounds(bounds)
+	polylineforpath(ascentpath, bounds, "#0000FF").setMap(map)
+	polylineforpath(descentpath, bounds, "#FF0000").setMap(map)
+
+})
+</script>
+<div id="map_canvas" style="width:100%; height:100%;"></div>
+{% endblock %}
