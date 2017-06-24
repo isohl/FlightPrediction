@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HARBOR Flight Predictor</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+        #map {
+            height: 100%;
+        }
+
+        /* Optional: Makes the sample page fill the window. */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content */
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 80%;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            -webkit-animation-name: animatetop;
+            -webkit-animation-duration: 0.4s;
+            animation-name: animatetop;
+            animation-duration: 0.4s;
+            border-radius: 8px;
+        }
+
+        /* Add Animation */
+        @-webkit-keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+        @keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+        /* The Close Button */
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-header {
+            padding: 2px 16px;
+            background-color: #5994FF;
+            color: white;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .modal-body {
+            padding: 2px 16px;
+        }
+
+        .modal-footer {
+            padding: 2px 16px;
+            background-color: #5994FF;
+            color: white;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .form-style-7 {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 2px;
+            padding: 20px;
+            font-family: Georgia, "Times New Roman", Times, serif;
+        }
+
+        .form-style-7 h1 {
+            display: block;
+            text-align: center;
+            padding: 0;
+            margin: 0px 0px 20px 0px;
+            color: #5C5C5C;
+            font-size: x-large;
+        }
+
+        .form-style-7 ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .form-style-7 li {
+            display: block;
+            padding: 9px;
+            border: 1px solid #DDDDDD;
+            margin-bottom: 30px;
+            border-radius: 3px;
+        }
+
+        .form-style-7 li:last-child {
+            border: none;
+            margin-bottom: 0px;
+            text-align: center;
+        }
+
+        .form-style-7 li > label {
+            display: block;
+            float: left;
+            margin-top: -19px;
+            background: #FFFFFF;
+            height: 14px;
+            padding: 2px 5px 2px 5px;
+            color: #878787;
+            font-size: 14px;
+            overflow: hidden;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .form-style-7 input[type="text"],
+        .form-style-7 input[type="date"],
+        .form-style-7 input[type="datetime"],
+        .form-style-7 input[type="email"],
+        .form-style-7 input[type="number"],
+        .form-style-7 input[type="search"],
+        .form-style-7 input[type="time"],
+        .form-style-7 input[type="url"],
+        .form-style-7 input[type="password"],
+        .form-style-7 textarea,
+        .form-style-7 select {
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            width: 100%;
+            display: block;
+            outline: none;
+            border: none;
+            height: 25px;
+            line-height: 25px;
+            font-size: 16px;
+            padding: 0;
+            font-family: Georgia, "Times New Roman", Times, serif;
+        }
+
+        .form-style-7 input[type="text"]:focus,
+        .form-style-7 input[type="date"]:focus,
+        .form-style-7 input[type="datetime"]:focus,
+        .form-style-7 input[type="email"]:focus,
+        .form-style-7 input[type="number"]:focus,
+        .form-style-7 input[type="search"]:focus,
+        .form-style-7 input[type="time"]:focus,
+        .form-style-7 input[type="url"]:focus,
+        .form-style-7 input[type="password"]:focus,
+        .form-style-7 textarea:focus,
+        .form-style-7 select:focus {
+        }
+
+        .form-style-7 li > span {
+            background: #F3F3F3;
+            display: block;
+            padding: 3px;
+            margin: 0 -9px -9px -9px;
+            text-align: center;
+            color: #C0C0C0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+        }
+
+        .form-style-7 textarea {
+            resize: none;
+        }
+
+        .form-style-7 input[type="submit"],
+        .form-style-7 input[type="button"] {
+            background: #2471FF;
+            border: none;
+            padding: 10px 20px 10px 20px;
+            border-bottom: 3px solid #5994FF;
+            border-radius: 3px;
+            color: #D2E2FF;
+        }
+
+        .form-style-7 input[type="submit"]:hover,
+        .form-style-7 input[type="button"]:hover {
+            background: #6B9FFF;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close">&times;</span>
+            <h2>HARBOR Flight Predictor</h2>
+        </div>
+        <div class="modal-body">
+            <form class="form-style-7">
+                <ul style="columns: 2;-webkit-columns: 2;-moz-columns: 2; column-gap: 3em;">
+                    <div style="break-inside: avoid-column;">
+                        <h1>Launch Site</h1>
+                        <li>
+                            <label for="date">Date</label>
+                            <input type="date" name="date" maxlength="100">
+                        </li>
+                        <li>
+                            <label for="time">Time</label>
+                            <input type="time" name="time" maxlength="100">
+                            <span>UTC time of launch</span>
+                        </li>
+                        <li>
+                            <label for="lat">Latitude</label>
+                            <textarea name="lat"></textarea>
+                            <span>Decimal Degrees North</span>
+                        </li>
+                        <li>
+                            <label for="lon">Longitude</label>
+                            <textarea name="lon"></textarea>
+                            <span>Decimal Degrees East</span>
+                        </li>
+                        <li>
+                            <label for="launch-alt">Launch Altitude</label>
+                            <textarea name="launch-alt"></textarea>
+                            <span>feet</span>
+                        </li>
+                        <li></li>
+                    </div>
+                    <div style="break-inside: avoid-column;">
+                        <h1>Flight Properties</h1>
+                        <li>
+                            <label for="burst-alt">Burst Altitude</label>
+                            <textarea name="burst-alt"></textarea>
+                            <span>feet</span>
+                        </li>
+                        <li>
+                            <label for="asc-rate">Ascent Rate</label>
+                            <textarea name="asc-rate"></textarea>
+                            <span>feet/minute</span>
+                        </li>
+                        <li>
+                            <label for="des-rate">Descent Rate</label>
+                            <textarea name="des-rate"></textarea>
+                            <span>feet/minute</span>
+                        </li>
+                        <li></li>
+                    </div>
+                </ul>
+                <ul>
+                    <li>
+                        <input type="submit" value="Predict">
+                    </li>
+                </ul>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <h3>&copy; Ian Sohl 2017 - HARBOR Project</h3>
+        </div>
+    </div>
+
+</div>
+<div id="map"></div>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script>
+    var map;
+    function initMap() {
+        var mapOptions = {
+            scaleControl: true,
+            zoom: 9,
+            mapTypeId: google.maps.MapTypeId.TERRAIN
+        };
+        map = new google.maps.Map(document.getElementById("map"), mapOptions);
+    }
+    // Get the modal
+    var modal = document.getElementById('myModal');
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function adjust_textarea(h) {
+        h.style.height = "20px";
+        h.style.height = (h.scrollHeight) + "px";
+    }
+
+    function polylineforpath(path, bounds, color) {
+        gpath = []
+        for (point in path) {
+            p = path[point]
+            p = new google.maps.LatLng(p[0], p[1])
+            gpath.push(p)
+            if (bounds != null) {
+                bounds.extend(p)
+            }
+        }
+
+        var polyline = new google.maps.Polyline({
+            editable: false,
+            path: gpath,
+            strokeColor: color,
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+        return polyline
+    }
+
+    function spliceify(a, b, c) {
+        parts = a.split(b);
+        secondPart = parts[1].split("&");
+        secondPart[0] = c
+        return parts[0] + b + secondPart.join('&');
+    }
+
+
+    if (document.location.search == "") {
+        modal.style.display = "block";
+    }
+    else {
+        var jsonSource = document.location.search.replace("?", "/track?");
+        $.getJSON(jsonSource).done(function (data) {
+            if (data["success"] == true) {
+                var ascentpath = data["trackup"];
+                var descentpath = data["trackdown"];
+                var bounds = new google.maps.LatLngBounds();
+                point1 = new google.maps.LatLng(ascentpath[0][0], ascentpath[0][1])
+                point2 = new google.maps.LatLng(descentpath[descentpath.length - 1][0], descentpath[descentpath.length - 1][1])
+                function round10(a) {
+                    return Math.round(a * 10) / 10;
+                }
+
+//                dist = round10(google.maps.geometry.spherical.computeDistanceBetween(point1, point2) * 0.000621371)
+//                angle = (Math.round(google.maps.geometry.spherical.computeHeading(point1, point2)) + 360) % 360
+//                distance_string = "Range: " + dist + " mi<br/>Bearing: " + angle + "°"
+//
+//                theD = document.createElement("div")
+//                theD.style.position = "absolute"
+//                theD.style.top = "60px"
+//                theD.style.right = "5px"
+//                theD.style.padding = "5px"
+//                theD.style.backgroundColor = "white"
+//                theD.innerHTML = distance_string + "<br/><a target=\"_blank\" href=\"{{editaddress}}\">edit</a><br/><input id='newOrigin' type='button' value='new start'/>"
+//                document.body.appendChild(theD)
+
+//                document.getElementById('newOrigin').addEventListener('click', function () {
+//                    google.maps.event.addListener(map, 'click', function (e) {
+//                        location.href = spliceify(spliceify(location.href, '&longitude=', e.latLng.lng()), '&latitude=', e.latLng.lat());
+//                        //alert(e.latLng.lat()+","+e.latLng.lng());
+//                    });
+//                })
+//                console.log(distance_string)
+
+                map.fitBounds(bounds)
+                polylineforpath([[44.37491, -116.80115], [44.00862, -113.56018], [43.66390, -111.05530], [43.10499, -107.72644], [42.33418, -104.04602]], null, "#00DD00").setMap(map)
+                polylineforpath([[44.83250, -116.68579], [44.50826, -113.69202], [44.00467, -110.13794], [43.53660, -107.40234], [42.85181, -104.04602]], null, "#BABA43").setMap(map)
+                polylineforpath([[43.90581, -116.90002], [43.57243, -113.90625], [43.04481, -110.33020], [42.59758, -107.68250], [41.81636, -104.05151]], null, "#BABA43").setMap(map)
+                polylineforpath(ascentpath, bounds, "#0000FF").setMap(map)
+                polylineforpath(descentpath, bounds, "#FF0000").setMap(map)
+                polylineforpath([ascentpath[0], descentpath[descentpath.length - 1]], bounds, "#000000").setMap(map)
+
+                map.setCenter({
+                    lat : descentpath[0][0],
+                    lng : descentpath[0][1]
+                })
+            }
+            else {
+                modal.style.display = "block";
+            }
+        });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtinK-PUMFtVk2B62MgDOXVR0bzrTCsNk&callback=initMap"
+        async defer></script>
+</body>
+</html>
