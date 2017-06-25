@@ -3,6 +3,3 @@ itsdangerous==0.24
 Jinja2==2.9.6
 MarkupSafe==1.0
 Werkzeug==0.12.2
-numpy==1.13.0
-pyproj==1.9.5.1
-pygrib==2.0.2
