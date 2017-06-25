@@ -9,6 +9,7 @@
          * element that contains the map. */
         #map {
             height: 100%;
+            z-index: 1;
         }
 
         /* Optional: Makes the sample page fill the window. */
@@ -18,11 +19,27 @@
             padding: 0;
         }
 
+        .loading {
+            display: none;
+            z-index: 2;
+            position: fixed;
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+            background-repeat: no-repeat;
+            background-position: center;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            top: 0;
+            text-align: center;
+            font-size: 8em;
+        }
+
         /* The Modal (background) */
         .modal {
             display: none; /* Hidden by default */
             position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
+            z-index: 3; /* Sit on top */
             padding-top: 100px; /* Location of the box */
             left: 0;
             top: 0;
@@ -302,6 +319,7 @@
 
 </div>
 <div id="map"></div>
+<div id="loading" class="loading"><br/><br/>Loading...</div>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 <script>
     var map;
@@ -309,10 +327,13 @@
         var mapOptions = {
             scaleControl: true,
             zoom: 9,
-            mapTypeId: google.maps.MapTypeId.TERRAIN
+            mapTypeId: google.maps.MapTypeId.TERRAIN,
+            center: {lat: 40.75, lng: -111.883333}
         };
         map = new google.maps.Map(document.getElementById("map"), mapOptions);
     }
+
+    var loading = document.getElementById("loading")
     // Get the modal
     var modal = document.getElementById('myModal');
 
@@ -369,9 +390,11 @@
         modal.style.display = "block";
     }
     else {
+        loading.style.display = "block";
         var jsonSource = document.location.search.replace("?", "/track?");
         $.getJSON(jsonSource).done(function (data) {
-            if (data["success"] == true) {
+            loading.style.display = "none";
+            if (data.success == true) {
                 var ascentpath = data["trackup"];
                 var descentpath = data["trackdown"];
                 var bounds = new google.maps.LatLngBounds();
@@ -411,8 +434,8 @@
                 polylineforpath([ascentpath[0], descentpath[descentpath.length - 1]], bounds, "#000000").setMap(map)
 
                 map.setCenter({
-                    lat : descentpath[0][0],
-                    lng : descentpath[0][1]
+                    lat: descentpath[0][0],
+                    lng: descentpath[0][1]
                 })
             }
             else {
