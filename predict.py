@@ -9,19 +9,14 @@ import numpy as np
 import math
 
 
-# Constant for Earths radius in miles
-earth_radius = 3960.0
+# Constant for Earths radius
+EARTH_RADIUS_MILES = 3960.0
 
-def change_in_latitude(miles):
-    """Given a distance north, return the change in latitude."""
-    return math.degrees(miles / earth_radius)
+def change_in_latitude_miles(miles):
+    return math.degrees(miles / EARTH_RADIUS_MILES)
 
-
-def change_in_longitude(latitude, miles):
-    """Given a latitude and a distance west, return the change in longitude."""
-    # Find the radius of a circle around the earth at given latitude.
-    r = earth_radius * math.cos(math.radians(latitude))
-    return math.degrees(miles / r)
+def change_in_longitude_miles(latitude, miles):
+    return math.degrees(miles / (EARTH_RADIUS_MILES * math.cos(math.radians(latitude))))
 
 
 class WindModel(object):
@@ -49,8 +44,8 @@ class WindModel(object):
             self.hrrr_height_map, self.hrrr_latlons = self._parse_grbs(pygrib.open(hrrr_data_file))
 
         if gfs_data_file is None and hrrr_data_file is None:
-            lat_radius = change_in_latitude(radius)
-            lon_radius = max(change_in_longitude(center[0] - lat_radius, radius), change_in_longitude(center[0] + lat_radius, radius))
+            lat_radius = change_in_latitude_miles(radius)
+            lon_radius = max(change_in_longitude_miles(center[0] - lat_radius, radius), change_in_longitude_miles(center[0] + lat_radius, radius))
 
             self.NW_bound = [center[0] + lat_radius, center[1] - lon_radius]
             self.SE_bound = [center[0] - lat_radius, center[1] + lon_radius]
@@ -99,7 +94,7 @@ class WindModel(object):
             if not any(forecast_postfix in x for x in forecasts):
                 ftp.cwd("..")
                 run_days.remove(max(run_days))
-                recent = max(run_days[1])
+                recent = max(run_days)[1]
                 ftp.cwd(recent)
                 forecasts = [f for f in ftp.nlst() if level_type in f and not f.endswith(".idx")]
             selected_forecast = [x for x in forecasts if forecast_postfix in x][0]
@@ -217,6 +212,54 @@ class WindModel(object):
 
         return [ugrd * 3.28084, vgrd * 3.28084]
 
+DT = 1.0/60.0 # 1 second
+
+def euler(model, start_point, asc_rate, des_rate, launch_alt, burst_alt):
+    """Perform an Euler integration. Start point in degrees and arguments in feet and feet/minute"""
+    trackup = []
+    trackdown = []
+
+    cur_position = start_point
+    cur_altitude = launch_alt+0.0001
+
+    burst = False
+
+    while cur_altitude > launch_alt:
+        ugrd, vgrd = model.get_winds(cur_position[0],cur_position[1], cur_altitude)
+        dx_miles = vgrd * DT * 0.0113636 # to miles/minute
+        dy_miles = ugrd * DT * 0.0113636 # to miles/minute
+        cur_position[0] += change_in_latitude_miles(dx_miles)
+        cur_position[1] += change_in_longitude_miles(cur_position[0], dy_miles)
+
+        if cur_altitude >= burst_alt:
+            burst = True
+
+        new_point = (cur_position[0], cur_position[1], cur_altitude)
+        if burst:
+            trackdown.append(new_point)
+            cur_altitude -= des_rate * DT
+        else:
+            trackup.append(new_point)
+            cur_altitude += asc_rate * DT
+
+    return trackup, trackdown
+
+
+def webPredict(data):
+    keys = ["date", "time", "lat", "lon", "launch-alt", "burst-alt", "asc-rate", "des-rate"]
+    for key in keys:
+        try:
+            (data[key])
+        except:
+            raise Exception, "Invalid %s, Data:%s" % (str(key), data)
+    rawTime = datetime.datetime.strptime(data["time"], "%H:%M")
+    timeDay = datetime.timedelta(hours=rawTime.hour, minutes=rawTime.minute)
+    forecast_date = datetime.datetime.strptime(data["date"], '%Y-%m-%d') + timeDay
+    launch_site = [float(data["lat"]), float(data["lon"])]
+    model = WindModel(center=launch_site, radius=100, forecast_date=forecast_date)
+    return euler(model, launch_site, float(data["asc-rate"]), float(data["des-rate"]), float(data["launch-alt"]), float(data["burst-alt"]))
+
+
 
 if __name__ == "__main__":
     # Test
@@ -225,4 +268,5 @@ if __name__ == "__main__":
     forecast_date = datetime.datetime.utcnow() + datetime.timedelta(6)
     # model = WindModel(center=center, radius=radius, forecast_date=forecast_date, keep_files=True)
     model = WindModel(gfs_data_file="saved/gfs.1498452054.93.grib2")
-    print model.get_winds(43.816442,-111.7459983, 5000)
+    # print model.get_winds(43.816442,-111.7459983, 5000)
+    print euler(model, center, 1100, 1500, 5000, 90000)

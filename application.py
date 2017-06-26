@@ -1,7 +1,7 @@
 from flask import Flask, current_app, jsonify, request
 import traceback
 
-import LocalPredict
+import predict
 
 application = Flask(__name__)
 
@@ -13,7 +13,7 @@ def root():
 def track():
     resp = {"success":False}
     try:
-        trackup, trackdown = LocalPredict.webPredict(request.args)
+        trackup, trackdown = predict.webPredict(request.args)
         resp["trackup"] = trackup
         resp["trackdown"] = trackdown
         resp["success"] = True

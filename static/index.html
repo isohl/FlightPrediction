@@ -425,18 +425,19 @@
 //                })
 //                console.log(distance_string)
 
-                map.fitBounds(bounds)
+
                 polylineforpath([[44.37491, -116.80115], [44.00862, -113.56018], [43.66390, -111.05530], [43.10499, -107.72644], [42.33418, -104.04602]], null, "#00DD00").setMap(map)
                 polylineforpath([[44.83250, -116.68579], [44.50826, -113.69202], [44.00467, -110.13794], [43.53660, -107.40234], [42.85181, -104.04602]], null, "#BABA43").setMap(map)
                 polylineforpath([[43.90581, -116.90002], [43.57243, -113.90625], [43.04481, -110.33020], [42.59758, -107.68250], [41.81636, -104.05151]], null, "#BABA43").setMap(map)
-                polylineforpath(ascentpath, bounds, "#0000FF").setMap(map)
-                polylineforpath(descentpath, bounds, "#FF0000").setMap(map)
-                polylineforpath([ascentpath[0], descentpath[descentpath.length - 1]], bounds, "#000000").setMap(map)
+                polylineforpath(ascentpath, bounds, "#0000FF").setMap(map);
+                polylineforpath(descentpath, bounds, "#FF0000").setMap(map);
+//                polylineforpath([ascentpath[0], descentpath[descentpath.length - 1]], bounds, "#000000").setMap(map);
 
                 map.setCenter({
                     lat: descentpath[0][0],
                     lng: descentpath[0][1]
-                })
+                });
+                map.fitBounds(bounds);
             }
             else {
                 modal.style.display = "block";
