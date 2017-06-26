@@ -21,12 +21,6 @@ def track():
         print traceback.format_exc()
     return jsonify(resp)
 
-@application.route("/wait")
-def wait():
-    import time
-    time.sleep(10)
-    return jsonify({"success":False})
-
 if __name__ == "__main__":
     application.debug = True
     application.run(host='0.0.0.0', port=80)
