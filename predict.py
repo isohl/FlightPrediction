@@ -7,7 +7,9 @@ import os
 from collections import defaultdict
 import numpy as np
 import math
+import logging
 
+logger = logging.getLogger("FlightPrediction")
 
 # Constant for Earths radius
 EARTH_RADIUS_MILES = 3960.0
@@ -51,7 +53,7 @@ class WindModel(object):
             self.SE_bound = [center[0] - lat_radius, center[1] + lon_radius]
 
             self._load_gfs(keep_files)
-            self._load_hrrr(keep_files)
+            # self._load_hrrr(keep_files)
 
     @staticmethod
     def _load_file(url, local_name):
@@ -71,6 +73,7 @@ class WindModel(object):
     def _parse_grbs(grbs):
         height_map = defaultdict(dict)
         latlons = None
+        logger.info("Parsing GRIB2 file with %s entries",grbs.messages)
         for grb in grbs:
             if grb['typeOfLevel'] == 'isobaricInhPa' and 'level' in grb.keys():
                 data_name = WindModel.NAME_MAP[grb['name']]
@@ -81,7 +84,7 @@ class WindModel(object):
         latlons = (latlons[0],latlons[1]-360)
         return height_map, latlons
 
-    def _load_generic(self, ftp_dir, prefix, level_type, expected_forecast, filter_type, local_file, keep_file=False):
+    def _load_generic(self, ftp_dir, prefix, level_type, expected_forecast, forecast_zeros, filter_type, local_file, keep_file=False):
         try:
             ftp = ftplib.FTP("ftp.ncep.noaa.gov")
             ftp.login()
@@ -90,13 +93,17 @@ class WindModel(object):
             recent = max(run_days)[1]
             ftp.cwd(recent)
             forecasts = [f for f in ftp.nlst() if level_type in f and not f.endswith(".idx")]
-            forecast_postfix = 'f' + str(int(expected_forecast)).zfill(3)
+            forecast_postfix = 'f' + str(int(expected_forecast)).zfill(forecast_zeros)
+            logger.debug("Selected forecast_postfix: %s",forecast_postfix)
             if not any(forecast_postfix in x for x in forecasts):
+                logger.warning("Could not find specified forecast in folder: %s",recent)
                 ftp.cwd("..")
                 run_days.remove(max(run_days))
                 recent = max(run_days)[1]
+                logger.info("Trying folder %s instead",recent)
                 ftp.cwd(recent)
                 forecasts = [f for f in ftp.nlst() if level_type in f and not f.endswith(".idx")]
+            # logger.debug("Forecast options: %s", forecasts)
             selected_forecast = [x for x in forecasts if forecast_postfix in x][0]
             params = [
                 "file=%s",
@@ -115,6 +122,7 @@ class WindModel(object):
             constructed_url = constructed_url % (
                 filter_type, selected_forecast, self.NW_bound[1], self.SE_bound[1], self.NW_bound[0], self.SE_bound[0],
                 "%2F"+recent)
+            logger.debug("Constructed URL: %s",constructed_url)
             self._load_file(constructed_url, local_file)
             grbs = pygrib.open(local_file)
             return self._parse_grbs(grbs)
@@ -130,18 +138,20 @@ class WindModel(object):
     def _load_gfs(self, keep_files):
         expected_forecast = max(min(int((self.forecast_date - datetime.datetime.utcnow()).total_seconds() / 3600), 384), 0)
         if expected_forecast >= 120: expected_forecast = expected_forecast / 3 * 3
+        logger.info("Loading GFS+%s forecast",expected_forecast)
         local_file = os.path.join("saved","gfs." + str(time.time()) + ".grib2")
         self.gfs_height_map, self.gfs_latlons = self._load_generic("pub/data/nccf/com/gfs/prod", "gfs.", "pgrb2.0p25",
-                                                                   expected_forecast, "filter_gfs_0p25.pl", local_file, keep_file=keep_files)
+                                                                   expected_forecast, 3, "filter_gfs_0p25.pl", local_file, keep_file=keep_files)
         if keep_files:
             self.gfs_data_file = local_file
 
     def _load_hrrr(self, keep_files):
         expected_forecast = max(int((self.forecast_date - datetime.datetime.utcnow()).total_seconds() / 3600), 0)
         if expected_forecast > 18: return
+        logger.info("Loading HRRR+%s forecast",expected_forecast)
         local_file = os.path.join("saved","hrrr." + str(time.time()) + ".grib2")
         self.hrrr_height_map, self.hrrr_latlons = self._load_generic("pub/data/nccf/com/hrrr/prod", "hrrr.", "wrfprs",
-                                                                     expected_forecast, "filter_hrrr_2d.pl", local_file, keep_file=keep_files)
+                                                                     expected_forecast, 2, "filter_hrrr_2d.pl", local_file, keep_file=keep_files)
         if keep_files:
             self.hrrr_data_file = local_file
 

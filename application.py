@@ -1,9 +1,11 @@
 from flask import Flask, current_app, jsonify, request
 import traceback
+import logging
 
 import predict
 
 application = Flask(__name__)
+logger = logging.getLogger("FlightPrediction")
 
 @application.route("/")
 def root():
@@ -22,5 +24,10 @@ def track():
     return jsonify(resp)
 
 if __name__ == "__main__":
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(fmt='%(levelname)s: %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
     application.debug = True
     application.run(host='0.0.0.0', port=80)
